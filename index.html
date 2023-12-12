@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #chat-container {
+            width: 300px;
+            margin: auto;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        #chat-messages {
+            padding: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #user-input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-top: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+        #send-button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0 0 5px 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="chat-container">
+    <div id="chat-messages"></div>
+    <input type="text" id="user-input" placeholder="Type your message...">
+    <button id="send-button" onclick="sendMessage()">Send</button>
+</div>
+<script>
+    document.getElementById('send-button').addEventListener('click', sendMessage);
+
+    function sendMessage() {
+        const userInput = document.getElementById('user-input');
+        const message = userInput.value;
+        if (message.trim() === '') {
+            return;
+        }
+
+        // Add user's message to the chat
+        addMessage('user', message);
+
+        // Make a POST request to the server
+        makePostRequest(message);
+
+        // Clear the input field
+        userInput.value = '';
+
+        // Scroll to the bottom of the chat
+        scrollToBottom();
+    }
+
+    function makePostRequest(content) {
+        const url = "http://localhost:5000/generate";
+        const headers = {
+            "Authorization": "Bearer oLbxwfXSc2CvJIr31YWLMpFyV-6GPn-ny-79UI5J",
+        };
+        const data = new URLSearchParams();
+        data.append('content', content);
+
+        fetch(url, {
+            method: 'POST',
+            headers: headers,
+            body: data
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Assuming the response contains the AI's message, replace with the actual property name
+            const aiMessage = data.aiMessage;
+            addMessage('system', aiMessage);
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function addMessage(role, content) {
+        const chatMessages = document.getElementById('chat-messages');
+        const messageElement = document.createElement('div');
+        messageElement.classList.add(role === 'user' ? 'user-message' : 'system-message');
+        messageElement.textContent = content;
+        chatMessages.appendChild(messageElement);
+    }
+
+    function scrollToBottom() {
+        const chatMessages = document.getElementById('chat-messages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
