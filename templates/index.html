@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Interface</title>
+    <style>
+        #chat-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <form action="/generate" method="post">
+        <label for="user_input">User Input:</label>
+        <input type="text" id="user_input" name="user_input" required>
+        <button type="submit">Generate</button>
+    </form>
+
+    <div id="chat-container">
+        <!-- Chat content will be displayed here -->
+    </div>
+
+    <script>
+document.querySelector('form').addEventListener('submit', function (event) {
+    event.preventDefault();
+
+    const userInput = document.getElementById('user_input').value;
+    const chatContainer = document.getElementById('chat-container');
+
+    // Display user's input in the chat container
+    const userMessage = document.createElement('p');
+    userMessage.textContent = `You: ${userInput}`;
+    chatContainer.appendChild(userMessage);
+
+    const Http = new XMLHttpRequest();
+    const url = 'http://localhost:5000/generate';
+
+    // Prepare the data to be sent in the request body
+    const params = `content=${encodeURIComponent(userInput)}`;
+
+    // Set up a callback function to handle the response
+    Http.onreadystatechange = function () {
+        if (Http.readyState == 4) {
+            if (Http.status == 200) {
+                const response = JSON.parse(Http.responseText);
+                const result = response.result;
+
+                // Extract the response property if it exists
+                const resultContent = result && result.response ? result.response : "No content available";
+
+                // Display server's response (result) in the chat container
+                const serverMessage = document.createElement('p');
+                serverMessage.textContent = `Server: ${resultContent}`;
+                chatContainer.appendChild(serverMessage);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+
+                // Log the response in the browser console
+                console.log('Response:', response);
+            } else {
+                console.error('Error:', Http.status, Http.statusText);
+            }
+        }
+    }
+
+    // Open the request and set the appropriate headers
+    Http.open("POST", url, true);
+    Http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+    // Send the POST request
+    Http.send(params);
+
+    // Clear the input field after submitting
+    document.getElementById('user_input').value = '';
+});
+
+
+
+    </script>
+</body>
+</html>
